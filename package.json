@@ -1,0 +1,54 @@
+{
+  "name": "nec-pay-generator-v0.1",
+  "version": "1.0.0",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "dist": "npm run build"
+  },
+  "keywords": [],
+  "author": "Emmanuel Cheeseman",
+  "license": "ISC",
+  "description": "An Electron application with Firebase integration built for the National Elections Commission of Liberia",
+  "devDependencies": {
+    "electron": "^32.1.2",
+    "electron-builder": "^24.13.3"
+  },
+  "dependencies": {
+    "firebase": "^11.3.1"
+  },
+  "build": {
+    "appId": "nec.wuaze.com",
+    "productName": "NEC Pay Generator",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "script.js",
+      "server.js",
+      "login.html",
+      "index.html",
+      "style.css",
+      "windows.ico",
+      "mac.icns",
+      "nec.png",
+      "images.png",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "icon": "mac.icns",
+      "target": "dmg"
+    },
+    "win": {
+      "icon": "windows.ico",
+      "target": "nsis"
+    },
+    "linux": {
+      "icon": "nec.png",
+      "target": "AppImage"
+    }
+  }
+}

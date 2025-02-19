@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Payslip Generator</title>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="container mt-5">
+      <form id="payslipForm" class="shadow p-4 rounded glass">
+        <header class="text-center mb-4">
+          <img src="nec.png" alt="NEC Logo" class="logo mb-3" />
+          <h1 class="mb-3 text-primary">PAY SLIP GENERATOR</h1>
+        </header>
+        <div class="form-row">
+          <!-- Month Selection -->
+          <div class="form-group col-md-6">
+            <label for="payslipMonth">Payslip Month:</label>
+            <input
+              type="month"
+              class="form-control"
+              id="payslipMonth"
+              required
+            />
+          </div>
+          <div class="form-group col-md-6">
+            <label for="name">Employee Name:</label>
+            <input
+              type="text"
+              class="form-control"
+              id="name"
+              placeholder="Start typing a name..."
+              required
+            />
+            <div id="autocomplete-list" class="autocomplete-items"></div>
+          </div>
+          <div class="form-group col-md-6">
+            <label for="email">Employee Email:</label>
+            <input type="email" class="form-control" id="email" required />
+          </div>
+          <div class="form-group col-md-6">
+            <label for="position">Position:</label>
+            <input type="text" class="form-control" id="position" required />
+          </div>
+          <div class="form-group col-md-6">
+            <label for="salary">Gross Income ($):</label>
+            <input type="number" class="form-control" id="salary" required />
+          </div>
+          <div class="form-group col-md-6">
+            <label for="deductions">Income Tax ($):</label>
+            <input
+              type="number"
+              class="form-control"
+              id="deductions"
+              required
+            />
+          </div>
+          <div class="form-group col-md-6">
+            <label for="tax">Nascorp Tax (%):</label>
+            <input type="number" class="form-control" id="tax" required />
+          </div>
+          <div class="form-group col-md-6">
+            <label for="conversionRate">Liberian Dollar Conversion Rate:</label>
+            <input
+              type="number"
+              class="form-control"
+              id="conversionRate"
+              step="0.01"
+              value="160"
+              required
+            />
+          </div>
+        </div>
+        <button
+          type="button"
+          class="btn btn-primary btn-block mb-2"
+          onclick="generatePayslip()"
+        >
+          Generate Payslip
+        </button>
+        <button
+          type="button"
+          class="btn btn-secondary btn-block mb-2"
+          onclick="addEmployee()"
+        >
+          Add Employee
+        </button>
+        <button
+          type="button"
+          class="btn btn-info btn-block mb-2"
+          onclick="updateConversionRate()"
+        >
+          Update Conversion Rate
+        </button id="updateRateBtn">
+        <button
+          type="button"
+          class="btn btn-danger btn-block"
+          onclick="clearForm()"
+        >
+          Clear Inputs
+        </button>
+      </form>
+
+      <div id="payslip" class="hidden mt-5 glass">
+        <div class="header">
+          <img src="nec.png" alt="Logo" />
+          <h2>MONTHLY PAY SLIP</h2>
+          <h4>NATIONAL ELECTIONS COMMISSION (NEC)</h4>
+        </div>
+        <div class="content">
+          <div class="payslip-section">
+            <p><strong>Month:</strong> <span id="payslipMonth"></span></p>
+            <p><strong>Name:</strong> <span id="payslipName"></span></p>
+            <p><strong>Email:</strong> <span id="payslipEmail"></span></p>
+            <p><strong>Position:</strong> <span id="payslipPosition"></span></p>
+            <p><strong>Rate:</strong> <span id="payslipRate"></span></p>
+            <p><strong>Date:</strong> <span id="payslipDate"></span></p>
+          </div>
+          <hr />
+          <div class="payslip-section">
+            <p>
+              <strong>Gross Salary:</strong> $<span id="payslipSalary"></span>
+            </p>
+            <p>
+              <strong>Income Tax:</strong> $<span id="payslipDeductions"></span>
+            </p>
+            <p><strong>Nascorp Tax:</strong> $<span id="payslipTax"></span></p>
+          </div>
+          <hr />
+          <div class="payslip-section net-pay-section">
+            <p>
+              <strong>Net Pay (USD):</strong> $<span
+                id="payslipNetPayUSD"
+              ></span>
+            </p>
+            <p>
+              <strong>Net Pay (LRD):</strong> $<span
+                id="payslipNetPayLD"
+              ></span>
+            </p>
+          </div>
+        </div>
+        <div class="footer text-center">
+          <p><strong>BUDGET & FINANCE</strong></p>
+          <button id="sendEmailBtn" class="btn btn-warning mb-2">
+            Send Email
+          </button>
+          <button id="printPayslipBtn" onclick="printPayslip()" class="btn-primary">Print Payslip</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-firestore-compat.js"></script>
+    <script src="scripts.js"></script>
+     <!-- Footer -->
+     <footer>
+      <p>
+        Created by Emmanuel Cheeseman - Staff at the National Election
+        Commission (NEC) of Liberia
+      </p>
+      <p>&copy; 2024 NEC Liberia. All rights reserved.</p>
+    </footer>
+
+  </body>
+</html>
