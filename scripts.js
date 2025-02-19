@@ -25,14 +25,14 @@ let debounceTimer;
 // Initialize the employees array at the top
 let employees = [];
 
-// Firebase configuration
+// Firebase configuration from environment variables
 const firebaseConfig = {
-  apiKey: "AIzaSyB3MTQ1TAlv5XybVV2DZDI7v7sCzkVO8yw",
-  authDomain: "pay-slip-generator-37980.firebaseapp.com",
-  projectId: "pay-slip-generator-37980",
-  storageBucket: "pay-slip-generator-37980.appspot.com",
-  messagingSenderId: "174710674762",
-  appId: "1:174710674762:web:f8755cc8e51ed2ecb29db3",
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID,
 };
 
 // Initialize Firebase

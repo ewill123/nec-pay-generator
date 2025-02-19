@@ -1,6 +1,7 @@
 // main.js
 const { app, BrowserWindow } = require("electron");
 const path = require("path");
+require("dotenv").config(); // Load environment variables from .env file
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -34,3 +35,9 @@ app.on("activate", () => {
     createWindow();
   }
 });
+
+// Securely retrieve any sensitive info such as tokens (if needed)
+const githubToken = process.env.GITHUB_TOKEN; // Read token securely from .env
+if (githubToken) {
+  console.log("GitHub Token: " + githubToken); // Do not print sensitive info in production
+}
