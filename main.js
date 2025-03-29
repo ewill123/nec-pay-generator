@@ -3,11 +3,16 @@ const { app, BrowserWindow } = require("electron");
 const path = require("path");
 require("dotenv").config(); // Load environment variables from .env file
 
+// Add electron-reload for real-time updates
+require("electron-reload")(__dirname, {
+  electron: path.join(__dirname, "node_modules", ".bin", "electron"),
+  hardResetMethod: "exit",
+});
+
 function createWindow() {
   const win = new BrowserWindow({
     width: 1920,
     height: 1080,
-
     webPreferences: {
       preload: path.join(__dirname, "script.js"),
       nodeIntegration: true, // Enable Node.js integration if needed

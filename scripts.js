@@ -66,27 +66,46 @@ document
   .getElementById("name")
   .addEventListener("input", debounce(fetchEmployeeData, 300));
 
+// Function to capitalize the first letter of each part of the name
+function capitalizeName(name) {
+  return name
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+}
+
 // Fetch employee data and populate the form
 async function fetchEmployeeData() {
   const enteredName = document
     .getElementById("name")
-    .value.trim()
-    .toLowerCase();
+    .value.toLowerCase()
+    .trim();
   console.log("Searching for employee:", enteredName);
 
-  if (enteredName.length === 0) {
-    return;
-  }
+  if (enteredName.length === 0) return;
 
   try {
     console.log("Employee data available:", employees);
-    const foundEmployee = employees.find((employee) => {
-      const employeeName = employee.name.toLowerCase().trim();
-      console.log("Comparing with:", employeeName);
-      return employeeName === enteredName;
+
+    // Normalize name by removing extra spaces
+    const normalizeName = (name) =>
+      name.toLowerCase().replace(/\s+/g, " ").trim();
+
+    // Split input name into first and last name (if available)
+    const nameParts = normalizeName(enteredName).split(" ");
+    const firstNameInput = nameParts[0];
+
+    // Find employees with matching first name
+    const matchedEmployees = employees.filter((employee) => {
+      const [firstName, lastName] = normalizeName(employee.name).split(" ");
+      return firstName === firstNameInput;
     });
 
-    if (foundEmployee) {
+    if (matchedEmployees.length === 1) {
+      // If there's only one match, auto-fill last name and details
+      const foundEmployee = matchedEmployees[0];
+      const formattedName = capitalizeName(foundEmployee.name); // Capitalize name
+      document.getElementById("name").value = formattedName; // Auto-fill full name with formatted name
       document.getElementById("email").value = foundEmployee.email || "";
       document.getElementById("position").value = foundEmployee.position || "";
       document.getElementById("salary").value = foundEmployee.salary || "";
@@ -94,13 +113,47 @@ async function fetchEmployeeData() {
         foundEmployee.deductions || "";
       document.getElementById("tax").value = foundEmployee.tax || "";
       console.log("Employee found:", foundEmployee);
+    } else if (matchedEmployees.length > 1) {
+      // If multiple employees match, show a dropdown for selection
+      let dropdownHTML = `<select id="employeeSelect" onchange="selectEmployee()">`;
+      dropdownHTML += `<option value="">Select Employee</option>`;
+      matchedEmployees.forEach((emp) => {
+        // Use a unique identifier (e.g., employee id) instead of the index
+        dropdownHTML += `<option value="${emp.id}">${capitalizeName(
+          emp.name
+        )}</option>`; // Format name
+      });
+      dropdownHTML += `</select>`;
+
+      document.getElementById("employeeDropdown").innerHTML = dropdownHTML;
+      console.log("Multiple employees found. Showing selection.");
     } else {
       console.log("No matching employee found.");
-      // Optionally clear the form if needed or show a message
-      // clearForm(); // Uncomment this line if you want to clear the form when no match is found
+      // Optionally clear the form if no match is found
+      // clearForm();
     }
   } catch (error) {
     console.error("Error fetching employee data:", error);
+  }
+}
+
+// Function to handle employee selection from the dropdown
+function selectEmployee() {
+  const selectedId = document.getElementById("employeeSelect").value;
+  if (selectedId !== "") {
+    const selectedEmployee = employees.find((emp) => emp.id === selectedId); // Find employee by unique id
+    if (selectedEmployee) {
+      const formattedName = capitalizeName(selectedEmployee.name); // Capitalize name
+      document.getElementById("name").value = formattedName;
+      document.getElementById("email").value = selectedEmployee.email || "";
+      document.getElementById("position").value =
+        selectedEmployee.position || "";
+      document.getElementById("salary").value = selectedEmployee.salary || "";
+      document.getElementById("deductions").value =
+        selectedEmployee.deductions || "";
+      document.getElementById("tax").value = selectedEmployee.tax || "";
+      console.log("Employee selected:", selectedEmployee);
+    }
   }
 }
 
@@ -138,7 +191,9 @@ function generatePayslip() {
   });
 
   if (!foundEmployee) {
-    alert("Employee not found in the database. Please add the employee first.");
+    alert(
+      "This Employee is not in the database. Please add the employee first."
+    );
     return; // Exit the function if the employee is not found
   }
 
@@ -148,43 +203,68 @@ function generatePayslip() {
   const deductions = parseFloat(document.getElementById("deductions").value);
   const taxPercentage = parseFloat(document.getElementById("tax").value);
 
-  // Calculate the tax amount based on the new exchange rate
+  // Get the user-defined percentages for USD and LRD
+  let usdPercentage =
+    parseFloat(document.getElementById("usdPercentage").value) / 100;
+  let lrdPercentage =
+    parseFloat(document.getElementById("lrdPercentage").value) / 100;
+
+  // Ensure the total percentage of USD and LRD does not exceed 100%
+  const totalPercentage = usdPercentage + lrdPercentage;
+
+  if (totalPercentage > 1) {
+    // If the total exceeds 100%, adjust the percentages to ensure they add up to 100%
+    const adjustment = totalPercentage - 1;
+
+    // You can adjust USD or LRD based on your preference
+    // Example: Adjust LRD percentage to make the total 100%
+    lrdPercentage -= adjustment;
+    alert("Total percentage exceeds 100%. Adjusting LRD percentage.");
+  }
+
+  // Calculate the tax and net pay
   const taxAmount = (taxPercentage / 100) * salary;
-
   const netPayAfterDeductions = salary - taxAmount - deductions;
-  const netPayUSD80 = netPayAfterDeductions * 0.8;
-  const netPayLD20 = netPayAfterDeductions * 0.2 * conversionRate;
 
-  document.getElementById("payslipName").innerText = name;
+  // Apply the user-defined percentages to calculate net pay
+  const netPayUSD = netPayAfterDeductions * usdPercentage;
+  const netPayLD = netPayAfterDeductions * lrdPercentage * conversionRate;
+
+  // Capitalizing the name for the payslip
+  const formattedName = capitalizeName(foundEmployee.name); // Capitalize name
+
+  // Populate the payslip with calculated values
+  document.getElementById("payslipName").innerText = formattedName;
   document.getElementById("payslipEmail").innerText = email;
   document.getElementById("payslipPosition").innerText = position;
   document.getElementById("payslipSalary").innerText = salary.toFixed(2);
   document.getElementById("payslipDeductions").innerText =
     deductions.toFixed(2);
   document.getElementById("payslipTax").innerText = taxAmount.toFixed(2);
-  document.getElementById("payslipNetPayUSD").innerText =
-    netPayUSD80.toFixed(2);
-  document.getElementById("payslipNetPayLD").innerText = netPayLD20.toFixed(2);
+  document.getElementById("payslipNetPayUSD").innerText = netPayUSD.toFixed(2);
+  document.getElementById("payslipNetPayLD").innerText = netPayLD.toFixed(2);
   document.getElementById("payslipRate").innerText = conversionRate.toFixed(2);
   document.getElementById("payslipDate").innerText =
     new Date().toLocaleDateString();
 
   document.getElementById("payslip").classList.remove("d-none");
 
+  // Sending payslip email
   document.getElementById("sendEmailBtn").addEventListener("click", () =>
     sendPayslipEmail(email, {
-      name,
+      name: formattedName,
       position,
       salary,
       deductions,
       tax: taxAmount,
-      netPayUSD: netPayUSD80,
-      netPayLD: netPayLD20,
+      netPayUSD,
+      netPayLD,
       rate: conversionRate,
       date: new Date().toLocaleDateString(),
     })
   );
 
+  // Clear the form after generating the payslip
   clearForm();
 }
 
@@ -204,7 +284,7 @@ function sendPayslipEmail(
       Income Tax: $${deductions.toFixed(2)}
       Nascorp Tax: $${tax.toFixed(2)}
       Net Pay in USD: $${netPayUSD.toFixed(2)}
-      Net Pay in LD: LD${netPayLD.toFixed(2)}
+      Net Pay in LD: $${netPayLD.toFixed(2)}
       Conversion Rate: ${rate.toFixed(2)}
       Date: ${date}
 
@@ -304,41 +384,43 @@ document.addEventListener("keydown", function (e) {
     e.preventDefault();
   }
 });
-function sendEmail() {
-  // Get the email from the input field
-  const employeeEmail = document.getElementById("email").value;
-
-  // Check if the email is valid
-  if (employeeEmail) {
-    const subject = "Your Payslip for the Month";
-    const body = "Please find attached your payslip for this month.";
-
-    // Opens the email client with pre-filled details
-    window.location.href = `mailto:${employeeEmail}?subject=${encodeURIComponent(
-      subject
-    )}&body=${encodeURIComponent(body)}`;
-  } else {
-    alert("Please enter a valid email address.");
-  }
-}
-document
-  .getElementById("printPayslipBtn")
-  .addEventListener("click", printPayslip);
 
 function printPayslip() {
   const payslipContent = document.getElementById("payslip").innerHTML;
+  const name = document.getElementById("name").value.trim();
+
+  // Function to capitalize the first letter of each word
+  function capitalizeName(name) {
+    return name
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ");
+  }
+
+  // Capitalizing the name before printing
+  const formattedName = capitalizeName(name);
+
+  // Replace the name in the payslip content with the formatted name
+  const formattedPayslipContent = payslipContent.replace(name, formattedName);
+
   const printWindow = window.open("", "", "height=800,width=600");
 
   printWindow.document.open();
   printWindow.document.write("<html><head><title>Payslip</title>");
+
+  // Bootstrap CDN for styling (if needed)
   printWindow.document.write(
     '<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />'
   );
-  // Adding custom styles for print
+
+  // Custom styles for better print formatting
   printWindow.document.write(`
       <style>
         body {
           font-family: "Arial", sans-serif;
+          background-color: #f4f4f4;
+          margin: 0;
+          padding: 0;
         }
         .payslip {
           max-width: 100%;
@@ -346,14 +428,14 @@ function printPayslip() {
           padding: 20px;
           background: white;
           border: 1px solid #ccc;
-          box-shadow: none;
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
         .header {
           background-color: #002060;
           color: white;
           text-align: center;
           padding: 10px 0;
-          font-size: 1.2rem;
+          font-size: 1.5rem;
           font-weight: bold;
         }
         .header img {
@@ -363,35 +445,45 @@ function printPayslip() {
           height: auto;
         }
         .payslip-section, .net-pay-section {
-          margin-bottom: 10px;
+          margin-bottom: 20px;
         }
         .net-pay-section {
-          font-size: 1.2rem;
+          font-size: 1.5rem;
+          font-weight: bold;
         }
         .footer {
           margin-top: 20px;
           text-align: center;
-          font-size: 0.9rem;
+          font-size: 1rem;
           color: #555;
         }
         @media print {
+          body {
+            background-color: white;
+          }
           .payslip {
             box-shadow: none;
             border: none;
             background: white;
           }
-          .btn-primary {
+          .btn-primary, .modal {
             display: none;
           }
-          .modal {
-            display: none;
+          .header img {
+            width: 50px;
+            height: auto;
           }
         }
       </style>
     `);
+
   printWindow.document.write("</head><body>");
-  printWindow.document.write(payslipContent);
+  printWindow.document.write(
+    `<div class="payslip">${formattedPayslipContent}</div>`
+  );
   printWindow.document.write("</body></html>");
+
+  // Close document and trigger print
   printWindow.document.close();
   printWindow.print();
 }
