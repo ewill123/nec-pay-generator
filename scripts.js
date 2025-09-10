@@ -5,15 +5,11 @@ window.onload = async function () {
       employees.push({ id: doc.id, ...doc.data() });
     });
 
-    // Set the initial value for the conversion rate input
     document.getElementById("conversionRate").value = conversionRate;
 
-    // Attach the event listener to the conversion rate input
     document
       .getElementById("conversionRate")
       .addEventListener("input", updateConversionRate);
-
-    // Initial call to generatePayslip to display default values
     generatePayslip();
   } catch (error) {
     console.error("Error fetching employees:", error);
@@ -21,18 +17,16 @@ window.onload = async function () {
 };
 
 let debounceTimer;
-
-// Initialize the employees array at the top
 let employees = [];
 
 // Firebase configuration from environment variables
 const firebaseConfig = {
-  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
-  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.REACT_APP_FIREBASE_APP_ID,
+  apiKey: "AIzaSyB3MTQ1TAlv5XybVV2DZDI7v7sCzkVO8yw",
+  authDomain: "pay-slip-generator-37980.firebaseapp.com",
+  projectId: "pay-slip-generator-37980",
+  storageBucket: "YOUR_PROJECT_ID.appspot.com",
+  messagingSenderId: "174710674762",
+  appId: "1:174710674762:web:f8755cc8e51ed2ecb29db3",
 };
 
 // Initialize Firebase
@@ -168,9 +162,7 @@ function updateConversionRate() {
 }
 
 // Function to handle only updating the rate when the button is clicked
-document.getElementById("updateRateBtn").addEventListener("click", () => {
-  updateConversionRate(); // Just update the conversion rate
-});
+// Remove this line entirely:
 
 function clearForm() {
   document.getElementById("name").value = "";

@@ -1,48 +1,48 @@
 // main.js
 const { app, BrowserWindow } = require("electron");
 const path = require("path");
-require("dotenv").config(); // Load environment variables from .env file
 
-// Add electron-reload for real-time updates
+// Load environment variables from .env
+require("dotenv").config();
+
+// Enable live reload for development
 require("electron-reload")(__dirname, {
   electron: path.join(__dirname, "node_modules", ".bin", "electron"),
   hardResetMethod: "exit",
 });
 
+// Function to create the main window
 function createWindow() {
   const win = new BrowserWindow({
     width: 1920,
     height: 1080,
     webPreferences: {
-      preload: path.join(__dirname, "script.js"),
-      nodeIntegration: true, // Enable Node.js integration if needed
-      contextIsolation: false, // Disable context isolation if needed
+      preload: path.join(__dirname, "preload.js"), // <-- use preload
+      nodeIntegration: false, // safer, don’t expose Node directly to renderer
+      contextIsolation: true, // safer, required for preload
     },
   });
 
-  // Load the login page first
+  // Load the login page
   win.loadFile("login.html");
 
-  // Open DevTools if needed
+  // Optional: Open DevTools for debugging
   // win.webContents.openDevTools();
 }
 
+// Electron app lifecycle
 app.on("ready", createWindow);
 
 app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") {
-    app.quit();
-  }
+  if (process.platform !== "darwin") app.quit();
 });
 
 app.on("activate", () => {
-  if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow();
-  }
+  if (BrowserWindow.getAllWindows().length === 0) createWindow();
 });
 
-// Securely retrieve any sensitive info such as tokens (if needed)
-const githubToken = process.env.GITHUB_TOKEN; // Read token securely from .env
+// Example: securely read GitHub token from .env
+const githubToken = process.env.GITHUB_TOKEN;
 if (githubToken) {
-  console.log("GitHub Token: " + githubToken); // Do not print sensitive info in production
+  console.log("GitHub Token is loaded securely (do not log in production).");
 }
