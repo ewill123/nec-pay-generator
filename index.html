@@ -4,11 +4,132 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Payslip Generator</title>
+
+    <!-- Bootstrap -->
     <link
       rel="stylesheet"
       href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
     />
-    <link rel="stylesheet" href="styles.css" />
+
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #74ebd5, #acb6e5);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .glass {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(12px);
+        border-radius: 20px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        transition: transform 0.2s ease;
+      }
+
+      .glass:hover {
+        transform: translateY(-3px);
+      }
+
+      .logo {
+        width: 80px;
+        height: auto;
+      }
+
+      h1 {
+        font-weight: bold;
+      }
+
+      label {
+        font-weight: 500;
+      }
+
+      .btn {
+        border-radius: 10px;
+        padding: 12px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+      }
+
+      .btn:hover {
+        transform: scale(1.03);
+      }
+
+      /* Modern Spinner */
+      .modern-spinner {
+        border: 5px solid rgba(255, 255, 255, 0.3);
+        border-top: 5px solid #007bff;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        margin: 20px auto;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .completed-message {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: green;
+        margin-top: 15px;
+        opacity: 0;
+        transition: opacity 0.6s ease-in-out;
+      }
+
+      .completed-message.show {
+        opacity: 1;
+      }
+
+      /* Payslip styling */
+      #payslip {
+        padding: 25px;
+        border-radius: 15px;
+        background: #fff;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+      }
+
+      #payslip hr {
+        margin: 15px 0;
+      }
+
+      /* Progress Bar */
+      .progress {
+        background-color: rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+
+      .progress-bar {
+        background: linear-gradient(90deg, #4bb2d6, #f5a700);
+        font-weight: bold;
+        color: #fff;
+        transition: width 0.3s ease;
+      }
+
+      footer {
+        margin-top: auto;
+        padding: 15px;
+        background: rgba(0, 0, 0, 0.25);
+        color: #fff;
+        text-align: center;
+        font-size: 14px;
+      }
+
+      @media (max-width: 768px) {
+        .glass {
+          padding: 20px !important;
+        }
+      }
+    </style>
   </head>
   <body>
     <div class="container mt-5">
@@ -17,8 +138,9 @@
           <img src="nec.png" alt="NEC Logo" class="logo mb-3" />
           <h1 class="mb-3 text-primary">PAY SLIP GENERATOR</h1>
         </header>
+
         <div class="form-row">
-          <!-- Month Selection -->
+          <!-- Payslip Month -->
           <div class="form-group col-md-6">
             <label for="payslipMonth">Payslip Month:</label>
             <input
@@ -28,6 +150,8 @@
               required
             />
           </div>
+
+          <!-- Employee Name -->
           <div class="form-group col-md-6">
             <label for="name">Employee Name:</label>
             <input
@@ -38,21 +162,28 @@
               required
             />
             <div id="employeeDropdown"></div>
-
             <div id="autocomplete-list" class="autocomplete-items"></div>
           </div>
+
+          <!-- Email -->
           <div class="form-group col-md-6">
             <label for="email">Employee Email:</label>
             <input type="email" class="form-control" id="email" required />
           </div>
+
+          <!-- Position -->
           <div class="form-group col-md-6">
             <label for="position">Position:</label>
             <input type="text" class="form-control" id="position" required />
           </div>
+
+          <!-- Gross Salary -->
           <div class="form-group col-md-6">
             <label for="salary">Gross Income ($):</label>
             <input type="number" class="form-control" id="salary" required />
           </div>
+
+          <!-- Income Tax -->
           <div class="form-group col-md-6">
             <label for="deductions">Income Tax ($):</label>
             <input
@@ -62,13 +193,16 @@
               required
             />
           </div>
+
+          <!-- Nascorp Tax -->
           <div class="form-group col-md-6">
             <label for="tax">Nascorp Tax (%):</label>
             <input type="number" class="form-control" id="tax" required />
           </div>
 
+          <!-- Conversion Rate -->
           <div class="form-group col-md-6">
-            <label for="conversionRate">Liberian Dollar Conversion Rate:</label>
+            <label for="conversionRate">Conversion Rate (LRD):</label>
             <input
               type="number"
               class="form-control"
@@ -78,8 +212,10 @@
               required
             />
           </div>
+
+          <!-- USD Net Pay % -->
           <div class="form-group col-md-6">
-            <label for="usdPercentage">Percentage for USD Net Pay:</label>
+            <label for="usdPercentage">USD Net Pay %:</label>
             <input
               type="number"
               class="form-control"
@@ -92,8 +228,9 @@
             />
           </div>
 
+          <!-- LRD Net Pay % -->
           <div class="form-group col-md-6">
-            <label for="lrdPercentage">Percentage for LRD Net Pay:</label>
+            <label for="lrdPercentage">LRD Net Pay %:</label>
             <input
               type="number"
               class="form-control"
@@ -106,6 +243,15 @@
             />
           </div>
         </div>
+
+        <!-- Buttons -->
+        <button
+          type="button"
+          class="btn btn-success btn-block mb-2"
+          onclick="generateAllPayslips()"
+        >
+          🚀 Generate & Send All Payslips
+        </button>
         <button
           type="button"
           class="btn btn-primary btn-block mb-2"
@@ -136,78 +282,110 @@
         </button>
       </form>
 
-      <!-- Loading Spinner and Generation Completion Message -->
-      <div id="loading-container" class="text-center">
+      <!-- Loading Spinner + Progress -->
+      <div id="loading-container" class="text-center mt-3">
         <div
-          class="modern-spinner"
           id="loading-spinner"
+          class="modern-spinner"
           style="display: none"
         ></div>
-        <div class="completed-message" id="generation-completed">
+
+        <div
+          class="progress mt-2"
+          style="height: 25px; display: none"
+          id="progress-container"
+        >
+          <div
+            id="progress-bar"
+            class="progress-bar progress-bar-striped progress-bar-animated"
+            role="progressbar"
+            style="width: 0%"
+          >
+            0%
+          </div>
+        </div>
+
+        <p id="current-employee" class="mt-2 font-weight-bold text-dark"></p>
+
+        <div id="generation-completed" class="completed-message mt-2">
           ✅ Payslip Generation Completed!
         </div>
       </div>
 
-      <div id="payslip" class="hidden mt-5 glass">
-        <div class="header">
-          <img src="nec.png" alt="Logo" />
-          <h2>MONTHLY PAY SLIP</h2>
-          <h4>NATIONAL ELECTIONS COMMISSION (NEC)</h4>
+      <!-- Payslip Section -->
+      <div id="payslip" class="hidden mt-5 glass p-4 shadow-lg rounded">
+        <div class="text-center mb-4">
+          <img src="nec.png" alt="Logo" class="mb-2" style="max-height: 80px" />
+          <h2 class="font-weight-bold text-uppercase mb-1">MONTHLY PAY SLIP</h2>
+          <h5 class="text-secondary">NATIONAL ELECTIONS COMMISSION (NEC)</h5>
+          <hr class="mt-3 mb-4" />
         </div>
-        <div class="content">
-          <div class="payslip-section">
+
+        <div class="row">
+          <div class="col-md-6 mb-2">
             <p><strong>Month:</strong> <span id="payslipMonth"></span></p>
             <p><strong>Name:</strong> <span id="payslipName"></span></p>
             <p><strong>Email:</strong> <span id="payslipEmail"></span></p>
+          </div>
+          <div class="col-md-6 mb-2">
             <p><strong>Position:</strong> <span id="payslipPosition"></span></p>
             <p><strong>Rate:</strong> <span id="payslipRate"></span></p>
             <p><strong>Date:</strong> <span id="payslipDate"></span></p>
           </div>
-          <hr />
-          <div class="payslip-section">
+        </div>
+
+        <hr />
+
+        <div class="row">
+          <div class="col-md-6 mb-2">
             <p>
               <strong>Gross Salary:</strong> $<span id="payslipSalary"></span>
             </p>
             <p>
               <strong>Income Tax:</strong> $<span id="payslipDeductions"></span>
             </p>
+          </div>
+          <div class="col-md-6 mb-2">
             <p><strong>Nascorp Tax:</strong> $<span id="payslipTax"></span></p>
           </div>
-          <hr />
-          <div class="payslip-section net-pay-section">
-            <p>
-              <strong>Net Pay (USD):</strong> $<span
-                id="payslipNetPayUSD"
-              ></span>
-            </p>
-            <p>
-              <strong>Net Pay (LRD):</strong> $<span
-                id="payslipNetPayLD"
-              ></span>
-            </p>
-          </div>
         </div>
-        <div class="footer text-center">
-          <p><strong>BUDGET & FINANCE</strong></p>
+
+        <hr />
+
+        <div class="text-center py-3 bg-light rounded">
+          <h4 class="mb-2"><strong>Net Pay</strong></h4>
+          <p class="mb-1 text-success font-weight-bold">
+            USD: $<span id="payslipNetPayUSD"></span>
+          </p>
+          <p class="mb-0 text-primary font-weight-bold">
+            LRD: $<span id="payslipNetPayLD"></span>
+          </p>
+        </div>
+
+        <hr />
+
+        <div class="text-center mt-3">
+          <p class="font-weight-bold text-dark">BUDGET & FINANCE</p>
           <button id="sendEmailBtn" class="btn btn-warning mb-2">
-            Send Email
+            📧 Send Email
           </button>
           <button
             id="printPayslipBtn"
             onclick="printPayslip()"
-            class="btn-primary"
+            class="btn btn-primary"
           >
-            Print Payslip
+            🖨 Print Payslip
           </button>
         </div>
       </div>
     </div>
 
+    <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-firestore-compat.js"></script>
     <script src="scripts.js"></script>
-    <!-- Footer -->
+
     <footer>
       <p>
         Created by Emmanuel Cheeseman - Staff at the National Election
