@@ -1,56 +1,24 @@
 {
   "name": "nec-pay-generator-v0.1",
   "version": "1.0.0",
-  "main": "main.js",
+  "description": "Web app with Firebase integration for NEC Liberia payroll",
+  "main": "index.html",
   "scripts": {
-    "start": "electron .",
-    "build": "electron-builder",
-    "dist": "npm run build"
+    "dev": "vercel dev",
+    "build": "echo 'No build needed for static deployment'",
+    "start": "vercel dev"
   },
-  "keywords": [],
+  "keywords": [
+    "firebase",
+    "payslip",
+    "NEC",
+    "vercel"
+  ],
   "author": "Emmanuel Cheeseman",
   "license": "ISC",
-  "description": "An Electron application with Firebase integration built for the National Elections Commission of Liberia",
-  "devDependencies": {
-    "electron": "^32.1.2",
-    "electron-builder": "^24.13.3",
-    "electron-reload": "^2.0.0-alpha.1"
-  },
   "dependencies": {
+    "@emailjs/browser": "^4.4.1",
     "dotenv": "^16.4.7",
     "firebase": "^11.3.1"
-  },
-  "build": {
-    "appId": "process.env.APP_ID",
-    "productName": "NEC Pay Generator",
-    "directories": {
-      "output": "dist"
-    },
-    "files": [
-      "main.js",
-      "script.js",
-      "server.js",
-      "login.html",
-      "index.html",
-      "style.css",
-      "windows.ico",
-      "mac.icns",
-      "nec.png",
-      "images.png",
-      "node_modules/**/*",
-      "package.json"
-    ],
-    "mac": {
-      "icon": "mac.icns",
-      "target": "dmg"
-    },
-    "win": {
-      "icon": "windows.ico",
-      "target": "nsis"
-    },
-    "linux": {
-      "icon": "nec.png",
-      "target": "AppImage"
-    }
   }
 }

@@ -19,44 +19,36 @@
         display: flex;
         flex-direction: column;
       }
-
       .glass {
         background: rgba(255, 255, 255, 0.15);
         backdrop-filter: blur(12px);
         border-radius: 20px;
         box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
         transition: transform 0.2s ease;
+        padding: 25px;
       }
-
       .glass:hover {
         transform: translateY(-3px);
       }
-
       .logo {
         width: 80px;
         height: auto;
       }
-
       h1 {
         font-weight: bold;
       }
-
       label {
         font-weight: 500;
       }
-
       .btn {
         border-radius: 10px;
         padding: 12px;
         font-weight: 500;
         transition: all 0.3s ease;
       }
-
       .btn:hover {
         transform: scale(1.03);
       }
-
-      /* Modern Spinner */
       .modern-spinner {
         border: 5px solid rgba(255, 255, 255, 0.3);
         border-top: 5px solid #007bff;
@@ -66,7 +58,6 @@
         margin: 20px auto;
         animation: spin 1s linear infinite;
       }
-
       @keyframes spin {
         0% {
           transform: rotate(0deg);
@@ -75,7 +66,6 @@
           transform: rotate(360deg);
         }
       }
-
       .completed-message {
         font-size: 1.2rem;
         font-weight: 600;
@@ -84,37 +74,29 @@
         opacity: 0;
         transition: opacity 0.6s ease-in-out;
       }
-
       .completed-message.show {
         opacity: 1;
       }
-
-      /* Payslip styling */
       #payslip {
         padding: 25px;
         border-radius: 15px;
         background: #fff;
         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
       }
-
       #payslip hr {
         margin: 15px 0;
       }
-
-      /* Progress Bar */
       .progress {
         background-color: rgba(255, 255, 255, 0.2);
         border-radius: 12px;
         overflow: hidden;
       }
-
       .progress-bar {
         background: linear-gradient(90deg, #4bb2d6, #f5a700);
         font-weight: bold;
         color: #fff;
         transition: width 0.3s ease;
       }
-
       footer {
         margin-top: auto;
         padding: 15px;
@@ -123,194 +105,20 @@
         text-align: center;
         font-size: 14px;
       }
-
       @media (max-width: 768px) {
         .glass {
           padding: 20px !important;
         }
       }
+      .hidden {
+        display: none !important;
+      }
     </style>
   </head>
+
   <body>
     <div class="container mt-5">
-      <form id="payslipForm" class="shadow p-4 rounded glass">
-        <header class="text-center mb-4">
-          <img src="nec.png" alt="NEC Logo" class="logo mb-3" />
-          <h1 class="mb-3 text-primary">PAY SLIP GENERATOR</h1>
-        </header>
-
-        <div class="form-row">
-          <!-- Payslip Month -->
-          <div class="form-group col-md-6">
-            <label for="payslipMonth">Payslip Month:</label>
-            <input
-              type="date"
-              class="form-control"
-              id="payslipMonth"
-              required
-            />
-          </div>
-
-          <!-- Employee Name -->
-          <div class="form-group col-md-6">
-            <label for="name">Employee Name:</label>
-            <input
-              type="text"
-              class="form-control"
-              id="name"
-              placeholder="Start typing a name..."
-              required
-            />
-            <div id="employeeDropdown"></div>
-            <div id="autocomplete-list" class="autocomplete-items"></div>
-          </div>
-
-          <!-- Email -->
-          <div class="form-group col-md-6">
-            <label for="email">Employee Email:</label>
-            <input type="email" class="form-control" id="email" required />
-          </div>
-
-          <!-- Position -->
-          <div class="form-group col-md-6">
-            <label for="position">Position:</label>
-            <input type="text" class="form-control" id="position" required />
-          </div>
-
-          <!-- Gross Salary -->
-          <div class="form-group col-md-6">
-            <label for="salary">Gross Income ($):</label>
-            <input type="number" class="form-control" id="salary" required />
-          </div>
-
-          <!-- Income Tax -->
-          <div class="form-group col-md-6">
-            <label for="deductions">Income Tax ($):</label>
-            <input
-              type="number"
-              class="form-control"
-              id="deductions"
-              required
-            />
-          </div>
-
-          <!-- Nascorp Tax -->
-          <div class="form-group col-md-6">
-            <label for="tax">Nascorp Tax (%):</label>
-            <input type="number" class="form-control" id="tax" required />
-          </div>
-
-          <!-- Conversion Rate -->
-          <div class="form-group col-md-6">
-            <label for="conversionRate">Conversion Rate (LRD):</label>
-            <input
-              type="number"
-              class="form-control"
-              id="conversionRate"
-              step="0.01"
-              value="160"
-              required
-            />
-          </div>
-
-          <!-- USD Net Pay % -->
-          <div class="form-group col-md-6">
-            <label for="usdPercentage">USD Net Pay %:</label>
-            <input
-              type="number"
-              class="form-control"
-              id="usdPercentage"
-              value="70"
-              min="0"
-              max="100"
-              step="1"
-              onchange="updateNetPay()"
-            />
-          </div>
-
-          <!-- LRD Net Pay % -->
-          <div class="form-group col-md-6">
-            <label for="lrdPercentage">LRD Net Pay %:</label>
-            <input
-              type="number"
-              class="form-control"
-              id="lrdPercentage"
-              value="30"
-              min="0"
-              max="100"
-              step="1"
-              onchange="updateNetPay()"
-            />
-          </div>
-        </div>
-
-        <!-- Buttons -->
-        <button
-          type="button"
-          class="btn btn-success btn-block mb-2"
-          onclick="generateAllPayslips()"
-        >
-          🚀 Generate & Send All Payslips
-        </button>
-        <button
-          type="button"
-          class="btn btn-primary btn-block mb-2"
-          onclick="generatePayslip()"
-        >
-          Generate Payslip
-        </button>
-        <button
-          type="button"
-          class="btn btn-secondary btn-block mb-2"
-          onclick="addEmployee()"
-        >
-          Add Employee
-        </button>
-        <button
-          type="button"
-          class="btn btn-info btn-block mb-2"
-          onclick="updateConversionRate()"
-        >
-          Update Conversion Rate
-        </button>
-        <button
-          type="button"
-          class="btn btn-danger btn-block"
-          onclick="clearForm()"
-        >
-          Clear Inputs
-        </button>
-      </form>
-
-      <!-- Loading Spinner + Progress -->
-      <div id="loading-container" class="text-center mt-3">
-        <div
-          id="loading-spinner"
-          class="modern-spinner"
-          style="display: none"
-        ></div>
-
-        <div
-          class="progress mt-2"
-          style="height: 25px; display: none"
-          id="progress-container"
-        >
-          <div
-            id="progress-bar"
-            class="progress-bar progress-bar-striped progress-bar-animated"
-            role="progressbar"
-            style="width: 0%"
-          >
-            0%
-          </div>
-        </div>
-
-        <p id="current-employee" class="mt-2 font-weight-bold text-dark"></p>
-
-        <div id="generation-completed" class="completed-message mt-2">
-          ✅ Payslip Generation Completed!
-        </div>
-      </div>
+      <!-- (form code stays the same as yours, trimmed for space) -->
 
       <!-- Payslip Section -->
       <div id="payslip" class="hidden mt-5 glass p-4 shadow-lg rounded">
@@ -323,7 +131,9 @@
 
         <div class="row">
           <div class="col-md-6 mb-2">
-            <p><strong>Month:</strong> <span id="payslipMonth"></span></p>
+            <p>
+              <strong>Month:</strong> <span id="payslipMonthDisplay"></span>
+            </p>
             <p><strong>Name:</strong> <span id="payslipName"></span></p>
             <p><strong>Email:</strong> <span id="payslipEmail"></span></p>
           </div>
@@ -380,10 +190,27 @@
       </div>
     </div>
 
-    <!-- Scripts -->
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-firestore-compat.js"></script>
+
+    <!-- EmailJS SDK v4 (modern import) -->
+    <script type="module">
+      import emailjs from "https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js";
+
+      // Initialize EmailJS
+      emailjs.init({
+        publicKey: "eXeSZDtXChLe9ZJrZ", // your public key
+      });
+
+      // Attach emailjs to window so scripts.js can use it
+      window.emailjs = emailjs;
+    </script>
+
+    <!-- Firebase Config -->
+    <script src="firebase-config.js"></script>
+
+    <!-- Your Main Script -->
     <script src="scripts.js"></script>
 
     <footer>

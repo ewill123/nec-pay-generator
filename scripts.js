@@ -1,32 +1,19 @@
 let debounceTimer;
 let employees = [];
-let conversionRate = parseFloat(localStorage.getItem("conversionRate")) || 1;
+let conversionRate = parseFloat(localStorage.getItem("conversionRate")) || 160;
+let lastGeneratedPayslip = null; // store last generated payslip data
 
-// Firebase configuration from environment variables
-const firebaseConfig = {
-  apiKey: "AIzaSyB3MTQ1TAlv5XybVV2DZDI7v7sCzkVO8yw",
-  authDomain: "pay-slip-generator-37980.firebaseapp.com",
-  projectId: "pay-slip-generator-37980",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "174710674762",
-  appId: "1:174710674762:web:f8755cc8e51ed2ecb29db3",
-};
+// --- EmailJS Setup ---
+emailjs.init("eXeSZDtXChLe9ZJrZ"); // your public key
 
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-
-// Unified window.onload
+// Load employees on page load
 window.onload = async function () {
   try {
     const snapshot = await db.collection("employees").get();
-    snapshot.forEach((doc) => {
-      employees.push({ id: doc.id, ...doc.data() });
-    });
+    snapshot.forEach((doc) => employees.push({ id: doc.id, ...doc.data() }));
 
     document.getElementById("conversionRate").value = conversionRate;
 
-    // Event listeners
     document
       .getElementById("conversionRate")
       .addEventListener("input", updateConversionRate);
@@ -35,9 +22,19 @@ window.onload = async function () {
       .getElementById("name")
       .addEventListener("input", debounce(fetchEmployeeData, 300));
 
+    // Attach Send Email button
+    const sendBtn = document.getElementById("sendEmailBtn");
+    sendBtn.addEventListener("click", () => {
+      if (!lastGeneratedPayslip) {
+        alert("❌ Please generate a payslip first!");
+        return;
+      }
+      sendPayslip(); // sends via EmailJS
+    });
+
     generatePayslip();
-  } catch (error) {
-    console.error("Error fetching employees:", error);
+  } catch (err) {
+    console.error("Error fetching employees:", err);
   }
 };
 
@@ -53,84 +50,70 @@ function debounce(func, delay) {
 function capitalizeName(name) {
   return name
     .split(" ")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
     .join(" ");
 }
 
-// Fetch employee data and populate form
-async function fetchEmployeeData() {
+// Fetch employees matching input
+function fetchEmployeeData() {
   const enteredName = document
     .getElementById("name")
     .value.toLowerCase()
     .trim();
   if (!enteredName) return;
 
-  try {
-    const normalizeName = (name) =>
-      name.toLowerCase().replace(/\s+/g, " ").trim();
-    const nameParts = normalizeName(enteredName).split(" ");
-    const firstNameInput = nameParts[0];
+  const matchedEmployees = employees.filter((emp) =>
+    emp.name.toLowerCase().includes(enteredName)
+  );
 
-    const matchedEmployees = employees.filter((employee) => {
-      const [firstName] = normalizeName(employee.name).split(" ");
-      return firstName === firstNameInput;
+  if (matchedEmployees.length === 1) {
+    fillEmployee(matchedEmployees[0]);
+    document.getElementById("employeeDropdown").innerHTML = "";
+  } else if (matchedEmployees.length > 1) {
+    let dropdownHTML = `<select id="employeeSelect" class="form-control mb-2" onchange="selectEmployee()"><option value="">Select Employee</option>`;
+    matchedEmployees.forEach((emp) => {
+      dropdownHTML += `<option value="${emp.id}">${capitalizeName(emp.name)} (${
+        emp.email
+      })</option>`;
     });
-
-    if (matchedEmployees.length === 1) {
-      const foundEmployee = matchedEmployees[0];
-      document.getElementById("name").value = capitalizeName(
-        foundEmployee.name
-      );
-      document.getElementById("email").value = foundEmployee.email || "";
-      document.getElementById("position").value = foundEmployee.position || "";
-      document.getElementById("salary").value = foundEmployee.salary || "";
-      document.getElementById("deductions").value =
-        foundEmployee.deductions || "";
-      document.getElementById("tax").value = foundEmployee.tax || "";
-      document.getElementById("employeeDropdown").innerHTML = "";
-    } else if (matchedEmployees.length > 1) {
-      let dropdownHTML = `<select id="employeeSelect" onchange="selectEmployee()">`;
-      dropdownHTML += `<option value="">Select Employee</option>`;
-      matchedEmployees.forEach((emp) => {
-        dropdownHTML += `<option value="${emp.id}">${capitalizeName(
-          emp.name
-        )}</option>`;
-      });
-      dropdownHTML += `</select>`;
-      document.getElementById("employeeDropdown").innerHTML = dropdownHTML;
-    } else {
-      console.log("No matching employee found.");
-    }
-  } catch (error) {
-    console.error("Error fetching employee data:", error);
+    dropdownHTML += `</select>`;
+    document.getElementById("employeeDropdown").innerHTML = dropdownHTML;
+  } else {
+    document.getElementById(
+      "employeeDropdown"
+    ).innerHTML = `<div class="text-danger">No match found</div>`;
+    document.getElementById("employeeId").value = "";
   }
 }
 
-// Handle employee dropdown selection
+// Fill form with selected employee
+function fillEmployee(emp) {
+  document.getElementById("name").value = capitalizeName(emp.name);
+  document.getElementById("email").value = emp.email || "";
+  document.getElementById("position").value = emp.position || "";
+  document.getElementById("salary").value = emp.salary || "";
+  document.getElementById("deductions").value = emp.deductions || "";
+  document.getElementById("tax").value = emp.tax || "";
+  document.getElementById("employeeId").value = emp.id || "";
+}
+
+// Select employee from dropdown
 function selectEmployee() {
   const selectedId = document.getElementById("employeeSelect").value;
   if (!selectedId) return;
-
-  const selectedEmployee = employees.find((emp) => emp.id === selectedId);
-  if (selectedEmployee) {
-    document.getElementById("name").value = capitalizeName(
-      selectedEmployee.name
-    );
-    document.getElementById("email").value = selectedEmployee.email || "";
-    document.getElementById("position").value = selectedEmployee.position || "";
-    document.getElementById("salary").value = selectedEmployee.salary || "";
-    document.getElementById("deductions").value =
-      selectedEmployee.deductions || "";
-    document.getElementById("tax").value = selectedEmployee.tax || "";
-    document.getElementById("employeeDropdown").innerHTML = "";
-  }
+  const emp = employees.find((e) => e.id === selectedId);
+  if (emp) fillEmployee(emp);
 }
 
 // Update conversion rate
 function updateConversionRate() {
   conversionRate = parseFloat(document.getElementById("conversionRate").value);
+  if (conversionRate <= 0) {
+    alert("Conversion rate must be greater than 0");
+    return;
+  }
   localStorage.setItem("conversionRate", conversionRate);
-  alert(`Conversion rate has been changed to ${conversionRate.toFixed(2)}`);
+  alert(`Conversion rate updated to ${conversionRate.toFixed(2)}`);
 }
 
 // Clear form
@@ -142,238 +125,155 @@ function clearForm() {
   document.getElementById("deductions").value = "";
   document.getElementById("tax").value = "";
   document.getElementById("employeeDropdown").innerHTML = "";
+  document.getElementById("employeeId").value = "";
 }
 
-// --- Existing Functions Upgraded ---
-
+// Generate payslip
 function generatePayslip() {
-  const name = document.getElementById("name").value.trim().toLowerCase();
-  const foundEmployee = employees.find(
-    (employee) => employee.name.toLowerCase().trim() === name
-  );
-  if (!foundEmployee) {
-    alert(
-      "This Employee is not in the database. Please add the employee first."
-    );
+  const name = document.getElementById("name").value.trim();
+  if (!name) return;
+
+  const salary = parseFloat(document.getElementById("salary").value) || 0;
+  const deductions =
+    parseFloat(document.getElementById("deductions").value) || 0;
+  const taxPercentage = parseFloat(document.getElementById("tax").value) || 0;
+  const usdPercentage =
+    (parseFloat(document.getElementById("usdPercentage").value) || 70) / 100;
+  const lrdPercentage =
+    (parseFloat(document.getElementById("lrdPercentage").value) || 30) / 100;
+
+  if (salary <= 0) {
+    alert("Salary must be greater than 0");
+    return;
+  }
+  if (taxPercentage < 0 || taxPercentage > 100) {
+    alert("Tax must be between 0 and 100");
+    return;
+  }
+  if (Math.abs(usdPercentage + lrdPercentage - 1) > 0.01) {
+    alert("USD + LRD percentages must equal 100%");
     return;
   }
 
-  const email = document.getElementById("email").value;
-  const position = document.getElementById("position").value;
-  const salary = parseFloat(document.getElementById("salary").value);
-  const deductions = parseFloat(document.getElementById("deductions").value);
-  const taxPercentage = parseFloat(document.getElementById("tax").value);
-
-  let usdPercentage =
-    parseFloat(document.getElementById("usdPercentage").value) / 100 || 0.7;
-  let lrdPercentage =
-    parseFloat(document.getElementById("lrdPercentage").value) / 100 || 0.3;
-
-  if (usdPercentage + lrdPercentage > 1) {
-    lrdPercentage -= usdPercentage + lrdPercentage - 1;
-    alert("Total percentage exceeds 100%. Adjusting LRD percentage.");
-  }
-
   const taxAmount = (taxPercentage / 100) * salary;
-  const netPayAfterDeductions = salary - taxAmount - deductions;
+  const netPay = salary - taxAmount - deductions;
+  const netPayUSD = netPay * usdPercentage;
+  const netPayLD = netPay * lrdPercentage * conversionRate;
 
-  const netPayUSD = netPayAfterDeductions * usdPercentage;
-  const netPayLD = netPayAfterDeductions * lrdPercentage * conversionRate;
+  const payslipMonth =
+    document.getElementById("payslipMonth").value ||
+    new Date().toLocaleDateString();
 
-  const formattedName = capitalizeName(foundEmployee.name);
-
-  document.getElementById("payslipName").innerText = formattedName;
-  document.getElementById("payslipEmail").innerText = email;
-  document.getElementById("payslipPosition").innerText = position;
+  // Fill Payslip
+  document.getElementById("payslipMonthDisplay").innerText = payslipMonth;
+  document.getElementById("payslipName").innerText = capitalizeName(name);
   document.getElementById("payslipSalary").innerText = salary.toFixed(2);
+  document.getElementById("payslipTax").innerText = taxAmount.toFixed(2);
   document.getElementById("payslipDeductions").innerText =
     deductions.toFixed(2);
-  document.getElementById("payslipTax").innerText = taxAmount.toFixed(2);
+  document.getElementById("payslipPosition").innerText =
+    document.getElementById("position").value;
+  document.getElementById("payslipEmail").innerText =
+    document.getElementById("email").value;
   document.getElementById("payslipNetPayUSD").innerText = netPayUSD.toFixed(2);
   document.getElementById("payslipNetPayLD").innerText = netPayLD.toFixed(2);
   document.getElementById("payslipRate").innerText = conversionRate.toFixed(2);
   document.getElementById("payslipDate").innerText =
     new Date().toLocaleDateString();
 
-  document.getElementById("payslip").classList.remove("d-none");
+  document.getElementById("payslip").classList.remove("hidden");
 
-  document.getElementById("sendEmailBtn").addEventListener("click", () =>
-    sendPayslipEmail(email, {
-      name: formattedName,
-      position,
-      salary,
-      deductions,
-      tax: taxAmount,
-      netPayUSD,
-      netPayLD,
-      rate: conversionRate,
-      date: new Date().toLocaleDateString(),
-    })
-  );
-
-  clearForm();
-}
-
-function sendPayslipEmail(
-  email,
-  {
-    name,
-    position,
+  // Save last generated payslip for email
+  lastGeneratedPayslip = {
+    name: capitalizeName(name),
+    email: document.getElementById("email").value,
+    position: document.getElementById("position").value,
     salary,
     deductions,
-    tax,
+    tax: taxAmount,
     netPayUSD,
     netPayLD,
-    rate,
-    date,
-    month,
-  }
-) {
-  if (!email) return;
-
-  const subject = encodeURIComponent(`Your Payslip for ${month}`);
-  const body = encodeURIComponent(`
-Dear ${name},
-
-Here is your payslip for ${month}:
-
-Position: ${position}
-Gross Salary: $${salary.toFixed(2)}
-Income Tax: $${deductions.toFixed(2)}
-Nascorp Tax: $${tax.toFixed(2)}
-Net Pay in USD: $${netPayUSD.toFixed(2)}
-Net Pay in LRD: $${netPayLD.toFixed(2)}
-Conversion Rate: ${rate.toFixed(2)}
-Date: ${date}
-
-Thank you,
-NEC Liberia
-  `);
-
-  const mailtoLink = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(
-    email
-  )}&su=${subject}&body=${body}`;
-
-  window.open(
-    mailtoLink,
-    "_blank",
-    "width=600,height=600,scrollbars=yes,resizable=yes"
-  );
+    rate: conversionRate,
+    month: payslipMonth,
+    date: new Date().toLocaleDateString(),
+  };
 }
 
-async function addEmployee() {
-  const name = document.getElementById("name").value.trim().toLowerCase();
-  const email = document.getElementById("email").value;
-  const position = document.getElementById("position").value;
-  const salary = parseFloat(document.getElementById("salary").value);
-  const deductions = parseFloat(document.getElementById("deductions").value);
-  const tax = parseFloat(document.getElementById("tax").value);
+// --- EmailJS Send Payslip ---
+function sendPayslip() {
+  if (!lastGeneratedPayslip) return alert("Generate a payslip first!");
+  sendPayslipEmail(lastGeneratedPayslip.email, lastGeneratedPayslip);
+}
 
-  try {
-    const snapshot = await db
-      .collection("employees")
-      .where("name", "==", name)
-      .get();
+function sendPayslipEmail(to_email, data) {
+  if (!to_email) return alert("Employee email not set!");
 
-    if (!snapshot.empty) {
-      const docId = snapshot.docs[0].id;
-      await db
-        .collection("employees")
-        .doc(docId)
-        .update({ email, position, salary, deductions, tax });
-      const index = employees.findIndex((emp) => emp.id === docId);
-      if (index !== -1) {
-        employees[index] = {
-          id: docId,
-          name,
-          email,
-          position,
-          salary,
-          deductions,
-          tax,
-        };
-      }
-    } else {
-      const docRef = await db
-        .collection("employees")
-        .add({ name, email, position, salary, deductions, tax });
-      employees.push({
-        id: docRef.id,
-        name,
-        email,
-        position,
-        salary,
-        deductions,
-        tax,
-      });
+  const templateParams = {
+    to_email,
+    name: data.name,
+    position: data.position,
+    salary: data.salary.toFixed(2),
+    deductions: data.deductions.toFixed(2),
+    tax: data.tax.toFixed(2),
+    netPayUSD: data.netPayUSD.toFixed(2),
+    netPayLD: data.netPayLD.toFixed(2),
+    rate: data.rate.toFixed(2),
+    date: data.date,
+    month: data.month,
+  };
+
+  console.log("Sending email to:", to_email, templateParams);
+
+  emailjs.send("service_fapikv8", "template_rlgylro", templateParams).then(
+    (response) => {
+      console.log(`Payslip sent to ${data.name} (${to_email})`);
+      alert(`✅ Payslip sent to ${data.name} (${to_email})`);
+    },
+    (error) => {
+      console.error("Failed to send email:", error);
+      alert("❌ Failed to send email. Check console for details.");
     }
-  } catch (error) {
-    console.error("Error adding/updating employee:", error);
-  }
+  );
 }
 
-function printPayslip() {
-  const payslipContent = document.getElementById("payslip").innerHTML;
-  const name = document.getElementById("name").value.trim();
-  const formattedName = capitalizeName(name);
-  const formattedPayslipContent = payslipContent.replace(name, formattedName);
-
-  const printWindow = window.open("", "", "height=800,width=600");
-  printWindow.document.open();
-  printWindow.document.write("<html><head><title>Payslip</title>");
-  printWindow.document.write(
-    '<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />'
-  );
-  printWindow.document.write(`<style>
-    body { font-family: Arial, sans-serif; background-color:#f4f4f4; margin:0; padding:0; }
-    .payslip { max-width:100%; margin:0; padding:20px; background:white; border:1px solid #ccc; box-shadow:0 4px 10px rgba(0,0,0,0.1); }
-    .header { background-color:#002060; color:white; text-align:center; padding:10px 0; font-size:1.5rem; font-weight:bold; }
-    .header img { display:block; margin:0 auto; width:70px; height:auto; }
-    .payslip-section, .net-pay-section { margin-bottom:20px; }
-    .net-pay-section { font-size:1.5rem; font-weight:bold; }
-    .footer { margin-top:20px; text-align:center; font-size:1rem; color:#555; }
-    @media print { body { background:white; } .payslip { box-shadow:none; border:none; background:white; } .btn-primary, .modal { display:none; } .header img { width:50px; height:auto; } }
-  </style>`);
-  printWindow.document.write("</head><body>");
-  printWindow.document.write(
-    `<div class="payslip">${formattedPayslipContent}</div>`
-  );
-  printWindow.document.write("</body></html>");
-  printWindow.document.close();
-  printWindow.print();
-}
-
+// Bulk Generate All Payslips with EmailJS
 async function generateAllPayslips() {
-  if (employees.length === 0) {
-    alert("No employees found in the database!");
-    return;
-  }
+  if (!employees.length) return alert("No employees found!");
+  const spinner = document.getElementById("loading-spinner");
+  const progressBar = document.getElementById("progress-bar");
+  const progressContainer = document.getElementById("progress-container");
+  const currentEmployee = document.getElementById("current-employee");
+  const completedMsg = document.getElementById("generation-completed");
 
-  document.getElementById("loading-spinner").style.display = "block";
-  document.getElementById("generation-completed").classList.remove("show");
+  spinner.style.display = "block";
+  progressContainer.style.display = "block";
+  completedMsg.classList.remove("show");
 
   const payslipMonth =
     document.getElementById("payslipMonth").value ||
-    new Date().toISOString().slice(0, 10);
+    new Date().toLocaleDateString();
 
   for (let i = 0; i < employees.length; i++) {
     const emp = employees[i];
+    currentEmployee.innerText = `Processing: ${capitalizeName(emp.name)}`;
+
     const salary = parseFloat(emp.salary) || 0;
     const deductions = parseFloat(emp.deductions) || 0;
     const taxPercentage = parseFloat(emp.tax) || 0;
 
-    let usdPercentage =
-      parseFloat(document.getElementById("usdPercentage").value) / 100 || 0.7;
-    let lrdPercentage =
-      parseFloat(document.getElementById("lrdPercentage").value) / 100 || 0.3;
+    const usdPercentage =
+      (parseFloat(document.getElementById("usdPercentage").value) || 70) / 100;
+    const lrdPercentage =
+      (parseFloat(document.getElementById("lrdPercentage").value) || 30) / 100;
 
     const taxAmount = (taxPercentage / 100) * salary;
     const netPayAfterDeductions = salary - taxAmount - deductions;
     const netPayUSD = netPayAfterDeductions * usdPercentage;
     const netPayLD = netPayAfterDeductions * lrdPercentage * conversionRate;
 
-    sendPayslipEmail(emp.email, {
+    const payslipData = {
       name: capitalizeName(emp.name),
+      email: emp.email,
       position: emp.position,
       salary,
       deductions,
@@ -381,23 +281,22 @@ async function generateAllPayslips() {
       netPayUSD,
       netPayLD,
       rate: conversionRate,
-      date: new Date().toLocaleDateString(),
       month: payslipMonth,
-    });
+      date: new Date().toLocaleDateString(),
+    };
 
-    await new Promise((resolve) => setTimeout(resolve, 1000)); // avoid spamming
+    sendPayslipEmail(emp.email, payslipData);
+
+    progressBar.style.width = `${((i + 1) / employees.length) * 100}%`;
+    progressBar.innerText = `${Math.round(
+      ((i + 1) / employees.length) * 100
+    )}%`;
+
+    await new Promise((r) => setTimeout(r, 1000)); // avoid spamming
   }
 
-  document.getElementById("loading-spinner").style.display = "none";
-  document.getElementById("generation-completed").classList.add("show");
-  alert("All payslips have been generated and emails triggered!");
+  spinner.style.display = "none";
+  completedMsg.classList.add("show");
+  currentEmployee.innerText = "";
+  alert("✅ All payslips have been sent!");
 }
-
-// Prevent default context menu and F12 dev tools
-document.addEventListener("contextmenu", function (e) {
-  e.preventDefault();
-});
-document.addEventListener("keydown", function (e) {
-  if (e.key === "F12" || (e.ctrlKey && e.shiftKey && e.key === "I"))
-    e.preventDefault();
-});
