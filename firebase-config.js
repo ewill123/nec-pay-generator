@@ -1,6 +1,4 @@
-// firebase-config.js
-
-// Browser-ready Firebase config
+// Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyB3MTQ1TAlv5XybVV2DZDI7v7sCzkVO8yw",
   authDomain: "pay-slip-generator-37980.firebaseapp.com",
@@ -11,4 +9,12 @@ const firebaseConfig = {
 
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+
+// Auth is always needed
+const auth = firebase.auth();
+
+// Firestore only if the SDK is loaded
+let db = null;
+if (firebase.firestore) {
+  db = firebase.firestore();
+}

@@ -11,6 +11,11 @@
       href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
     />
 
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="nec.png" />
+    <link rel="shortcut icon" href="nec.png" type="image/png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="nec.png" />
+
     <style>
       body {
         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
@@ -18,37 +23,72 @@
         min-height: 100vh;
         display: flex;
         flex-direction: column;
+        color: #333;
       }
+
       .glass {
-        background: rgba(255, 255, 255, 0.15);
-        backdrop-filter: blur(12px);
-        border-radius: 20px;
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-        transition: transform 0.2s ease;
-        padding: 25px;
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(15px);
+        border-radius: 25px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        padding: 30px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
       }
+
       .glass:hover {
-        transform: translateY(-3px);
+        transform: translateY(-5px);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
       }
+
       .logo {
-        width: 80px;
+        width: 90px;
         height: auto;
       }
+
+      h1,
+      h2 {
+        font-weight: 700;
+      }
+
       h1 {
-        font-weight: bold;
+        font-size: 2rem;
       }
+
       label {
-        font-weight: 500;
+        font-weight: 600;
       }
+
+      .form-control {
+        border-radius: 12px;
+        padding: 10px 12px;
+      }
+
       .btn {
-        border-radius: 10px;
-        padding: 12px;
-        font-weight: 500;
+        border-radius: 12px;
+        padding: 12px 15px;
+        font-weight: 600;
         transition: all 0.3s ease;
       }
+
+      .btn-primary {
+        background: linear-gradient(90deg, #4bb2d6, #f5a700);
+        border: none;
+        color: #fff;
+      }
+
+      .btn-primary:hover {
+        transform: scale(1.05);
+        opacity: 0.9;
+      }
+
+      .btn-outline-danger {
+        border-width: 2px;
+      }
+
       .btn:hover {
         transform: scale(1.03);
       }
+
       .modern-spinner {
         border: 5px solid rgba(255, 255, 255, 0.3);
         border-top: 5px solid #007bff;
@@ -58,6 +98,7 @@
         margin: 20px auto;
         animation: spin 1s linear infinite;
       }
+
       @keyframes spin {
         0% {
           transform: rotate(0deg);
@@ -66,6 +107,32 @@
           transform: rotate(360deg);
         }
       }
+
+      #payslip {
+        padding: 30px;
+        border-radius: 20px;
+        background: #fff;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+      }
+
+      #payslip hr {
+        margin: 20px 0;
+      }
+
+      .progress {
+        background-color: rgba(255, 255, 255, 0.3);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+
+      .progress-bar {
+        background: linear-gradient(90deg, #4bb2d6, #f5a700);
+        font-weight: bold;
+        color: #fff;
+        transition: width 0.3s ease;
+      }
+
       .completed-message {
         font-size: 1.2rem;
         font-weight: 600;
@@ -74,51 +141,250 @@
         opacity: 0;
         transition: opacity 0.6s ease-in-out;
       }
+
       .completed-message.show {
         opacity: 1;
       }
-      #payslip {
-        padding: 25px;
-        border-radius: 15px;
-        background: #fff;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
-      }
-      #payslip hr {
-        margin: 15px 0;
-      }
-      .progress {
-        background-color: rgba(255, 255, 255, 0.2);
-        border-radius: 12px;
-        overflow: hidden;
-      }
-      .progress-bar {
-        background: linear-gradient(90deg, #4bb2d6, #f5a700);
-        font-weight: bold;
-        color: #fff;
-        transition: width 0.3s ease;
-      }
+
       footer {
         margin-top: auto;
-        padding: 15px;
+        padding: 20px;
         background: rgba(0, 0, 0, 0.25);
         color: #fff;
         text-align: center;
         font-size: 14px;
       }
+
       @media (max-width: 768px) {
         .glass {
           padding: 20px !important;
         }
       }
+
       .hidden {
         display: none !important;
+      }
+
+      #employeeDropdown {
+        position: absolute;
+        z-index: 10;
+        width: 100%;
+        max-height: 200px;
+        overflow-y: auto;
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+      }
+
+      #employeeDropdown div {
+        padding: 8px 12px;
+        cursor: pointer;
+        transition: background 0.2s ease;
+      }
+
+      #employeeDropdown div:hover {
+        background: #f5f5f5;
+      }
+
+      /* Toasts */
+      #toastContainer {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+      }
+
+      .toast {
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+      }
+
+      .toast-body {
+        font-weight: 600;
       }
     </style>
   </head>
 
   <body>
+    <!-- Toast Container -->
+    <div
+      id="toastContainer"
+      style="position: fixed; top: 20px; right: 20px; z-index: 1050"
+    ></div>
+
     <div class="container mt-5">
-      <!-- (form code stays the same as yours, trimmed for space) -->
+      <form id="payslipForm" class="shadow glass rounded position-relative">
+        <!-- Header -->
+        <header class="text-center mb-4">
+          <img src="nec.png" alt="NEC Logo" class="logo mb-3" />
+          <h1 class="text-primary">PAY SLIP GENERATOR</h1>
+        </header>
+
+        <!-- Logout -->
+        <div class="text-right mb-4">
+          <button
+            type="button"
+            class="btn btn-outline-danger"
+            onclick="logoutUser()"
+          >
+            🔒 Logout
+          </button>
+        </div>
+
+        <input type="hidden" id="employeeId" />
+
+        <div class="form-row">
+          <div class="form-group col-md-6">
+            <label for="payslipMonth">Payslip Month:</label>
+            <input
+              type="date"
+              class="form-control"
+              id="payslipMonth"
+              required
+            />
+          </div>
+          <div class="form-group col-md-6 position-relative">
+            <label for="name">Employee Name:</label>
+            <input
+              type="text"
+              class="form-control"
+              id="name"
+              placeholder="Start typing a name..."
+              autocomplete="off"
+              required
+            />
+            <div id="employeeDropdown"></div>
+          </div>
+          <div class="form-group col-md-6">
+            <label for="email">Employee Email:</label>
+            <input type="email" class="form-control" id="email" required />
+          </div>
+          <div class="form-group col-md-6">
+            <label for="position">Position:</label>
+            <input type="text" class="form-control" id="position" required />
+          </div>
+          <div class="form-group col-md-6">
+            <label for="salary">Gross Income ($):</label>
+            <input type="number" class="form-control" id="salary" required />
+          </div>
+          <div class="form-group col-md-6">
+            <label for="deductions">Income Tax ($):</label>
+            <input
+              type="number"
+              class="form-control"
+              id="deductions"
+              required
+            />
+          </div>
+          <div class="form-group col-md-6">
+            <label for="tax">Nascorp Tax (%):</label>
+            <input type="number" class="form-control" id="tax" required />
+          </div>
+          <div class="form-group col-md-6">
+            <label for="conversionRate">Conversion Rate (LRD):</label>
+            <input
+              type="number"
+              class="form-control"
+              id="conversionRate"
+              step="0.01"
+              value="160"
+              required
+            />
+          </div>
+          <div class="form-group col-md-6">
+            <label for="usdPercentage">USD Net Pay %:</label>
+            <input
+              type="number"
+              class="form-control"
+              id="usdPercentage"
+              value="70"
+              min="0"
+              max="100"
+              step="1"
+            />
+          </div>
+          <div class="form-group col-md-6">
+            <label for="lrdPercentage">LRD Net Pay %:</label>
+            <input
+              type="number"
+              class="form-control"
+              id="lrdPercentage"
+              value="30"
+              min="0"
+              max="100"
+              step="1"
+            />
+          </div>
+        </div>
+
+        <div class="mt-3">
+          <button
+            class="btn btn-success btn-block mb-2"
+            onclick="sendPayslipsToAll(event)"
+          >
+            📧 Send All Payslips
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary btn-block mb-2"
+            onclick="generatePayslip()"
+          >
+            Generate Payslip
+          </button>
+          <button
+            type="button"
+            class="btn btn-secondary btn-block mb-2"
+            onclick="addOrUpdateEmployee()"
+          >
+            ➕ Add / Update Employee
+          </button>
+          <button
+            type="button"
+            class="btn btn-danger btn-block mb-2"
+            onclick="deleteEmployee()"
+          >
+            ❌ Delete Employee
+          </button>
+          <button
+            type="button"
+            class="btn btn-info btn-block mb-2"
+            onclick="updateConversionRate()"
+          >
+            🔄 Update Conversion Rate
+          </button>
+          <button
+            type="button"
+            class="btn btn-warning btn-block"
+            onclick="clearForm()"
+          >
+            🧹 Clear Inputs
+          </button>
+        </div>
+      </form>
+
+      <!-- Loading Spinner + Progress -->
+      <div id="loading-container" class="text-center mt-4">
+        <div id="loading-spinner" class="modern-spinner hidden"></div>
+        <div
+          class="progress mt-2 hidden"
+          id="progress-container"
+          style="height: 25px"
+        >
+          <div
+            id="progress-bar"
+            class="progress-bar progress-bar-striped progress-bar-animated"
+            role="progressbar"
+            style="width: 0%"
+          >
+            0%
+          </div>
+        </div>
+        <p id="current-employee" class="mt-2 font-weight-bold text-dark"></p>
+        <div id="generation-completed" class="completed-message mt-2">
+          ✅ Payslip Generation Completed!
+        </div>
+      </div>
 
       <!-- Payslip Section -->
       <div id="payslip" class="hidden mt-5 glass p-4 shadow-lg rounded">
@@ -190,27 +456,28 @@
       </div>
     </div>
 
-    <!-- Firebase -->
+    <!-- Toast Container -->
+    <div id="toastContainer"></div>
+
+    <!-- Scripts -->
     <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-auth-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
 
-    <!-- EmailJS SDK v4 (modern import) -->
-    <script type="module">
-      import emailjs from "https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js";
+    <script>
+      emailjs.init({ publicKey: "eXeSZDtXChLe9ZJrZ" });
 
-      // Initialize EmailJS
-      emailjs.init({
-        publicKey: "eXeSZDtXChLe9ZJrZ", // your public key
-      });
-
-      // Attach emailjs to window so scripts.js can use it
-      window.emailjs = emailjs;
+      async function confirmDelete(message) {
+        return new Promise((resolve) => {
+          const confirmed = window.confirm(message);
+          resolve(confirmed);
+        });
+      }
     </script>
 
-    <!-- Firebase Config -->
     <script src="firebase-config.js"></script>
-
-    <!-- Your Main Script -->
     <script src="scripts.js"></script>
 
     <footer>

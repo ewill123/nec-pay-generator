@@ -1,24 +1,51 @@
-import xlsx from "xlsx";
-import path from "path";
-import { fileURLToPath } from "url";
+import emailjs from "@emailjs/browser"; // use browser version on server too
 
-// For __dirname replacement in ESM modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+export default async function handler(req, res) {
+  if (req.method !== "POST")
+    return res.status(405).json({ message: "Method not allowed" });
 
-export default function handler(req, res) {
   try {
-    // Adjust the path if your Excel file is in the root
-    const workbook = xlsx.readFile(
-      path.join(__dirname, "../your-tax-calculator.xlsx")
-    );
-    const sheetName = workbook.SheetNames[0];
-    const sheet = workbook.Sheets[sheetName];
-    const taxData = xlsx.utils.sheet_to_json(sheet);
+    const {
+      name,
+      email,
+      position,
+      salary,
+      deductions,
+      tax,
+      usdPercentage,
+      lrdPercentage,
+      conversionRate,
+      month,
+    } = req.body;
 
-    res.status(200).json(taxData);
+    // --- Sensitive calculations server-side ---
+    const taxAmount = (tax / 100) * salary;
+    const netPay = salary - taxAmount - deductions;
+    const netPayUSD = netPay * (usdPercentage / 100);
+    const netPayLD = netPay * (lrdPercentage / 100) * conversionRate;
+
+    // --- Email sending ---
+    await emailjs.send("service_fapikv8", "template_rlgylro", {
+      to_email: email,
+      name,
+      email,
+      position,
+      date: new Date().toLocaleDateString(),
+      salary: salary.toFixed(2),
+      deductions: deductions.toFixed(2),
+      tax: taxAmount.toFixed(2),
+      netPayUSD: netPayUSD.toFixed(2),
+      netPayLD: netPayLD.toFixed(2),
+      month,
+      title: `Payslip for ${month}`,
+    });
+
+    res.status(200).json({
+      message: "Payslip generated and sent successfully",
+      payslip: { name, taxAmount, netPay, netPayUSD, netPayLD },
+    });
   } catch (error) {
-    console.error("Error reading Excel:", error);
-    res.status(500).json({ error: "Failed to read tax data" });
+    console.error("Server Error:", error);
+    res.status(500).json({ message: "Failed to generate payslip", error });
   }
 }

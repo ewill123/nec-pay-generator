@@ -1,20 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <!-- Manifest -->
-    <link rel="manifest" href="manifest.json" />
-    <!-- Optional: icon for mobile browsers -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Login - Payslip App</title>
+
     <link rel="icon" href="windows.ico" type="image/x-icon" />
     <meta name="theme-color" content="#4bb2d6" />
 
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Login - Payslip App</title>
+    <!-- Bootstrap 4 CSS -->
     <link
       rel="stylesheet"
       href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      crossorigin="anonymous"
     />
+
     <style>
+      /* Base Styles */
       body {
         display: flex;
         flex-direction: column;
@@ -26,50 +28,69 @@
         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
       }
 
-      .login-container {
-        display: flex;
-        justify-content: center;
-        align-items: center;
+      main {
         width: 100%;
-        flex: 1;
+        max-width: 420px;
+        padding: 2rem;
       }
 
       .login-form {
         background: rgba(255, 255, 255, 0.1);
         backdrop-filter: blur(12px);
         border-radius: 15px;
-        padding: 3rem;
-        width: 100%;
-        max-width: 400px;
+        padding: 2.5rem 2rem 3rem;
         box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
-        animation: fadeIn 1s ease-out;
-      }
-
-      .login-form h2 {
-        text-align: center;
-        margin-bottom: 1.5rem;
-        color: #007bff;
-        font-weight: 600;
-        font-size: 1.5rem;
-      }
-
-      .form-group label {
+        animation: fadeIn 0.8s ease-out;
         color: #fff;
       }
 
-      .btn-primary {
+      .logo {
+        display: block;
+        margin: 0 auto 1.5rem;
+        width: 100px;
+      }
+
+      h2 {
+        text-align: center;
+        color: #007bff;
+        font-weight: 600;
+        font-size: 1.75rem;
+        margin-bottom: 2rem;
+      }
+
+      label {
+        color: #fff;
+        font-weight: 600;
+      }
+
+      input.form-control {
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        transition: border-color 0.3s ease;
+      }
+
+      input.form-control:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 5px #007bff;
+      }
+
+      button.btn-primary {
         background-color: #007bff;
         border: none;
         border-radius: 8px;
         padding: 12px;
         font-size: 16px;
-        font-weight: 500;
+        font-weight: 600;
         width: 100%;
-        transition: all 0.3s ease;
+        transition: background-color 0.3s ease;
+        cursor: pointer;
       }
 
-      .btn-primary:hover {
+      button.btn-primary:hover,
+      button.btn-primary:focus {
         background-color: #0056b3;
+        outline: none;
       }
 
       .error-message {
@@ -77,6 +98,16 @@
         font-size: 0.9rem;
         margin-top: 0.5rem;
         display: none;
+      }
+
+      footer {
+        background-color: rgba(0, 0, 0, 0.25);
+        padding: 12px;
+        text-align: center;
+        color: white;
+        font-size: 14px;
+        width: 100%;
+        margin-top: auto;
       }
 
       @keyframes fadeIn {
@@ -90,41 +121,30 @@
         }
       }
 
-      .logo {
-        display: block;
-        margin: 0 auto 20px auto;
-        width: 100px;
-      }
-
-      footer {
-        background-color: rgba(0, 0, 0, 0.2);
-        padding: 10px;
-        text-align: center;
-        color: white;
-        font-size: 14px;
-        width: 100%;
-      }
-
       @media (max-width: 500px) {
+        main {
+          padding: 1rem 1.5rem;
+        }
+
         .login-form {
-          padding: 2rem;
-          width: 90%;
+          padding: 1.5rem 1rem 2rem;
         }
       }
     </style>
 
     <!-- Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="firebase-config.js"></script>
   </head>
+
   <body>
-    <div class="login-container">
-      <div class="login-form">
-        <img src="nec.png" alt="Logo" class="logo" />
+    <main>
+      <section class="login-form" aria-label="Login form">
+        <img src="nec.png" alt="NEC Logo" class="logo" />
         <h2>Login to Payslip App</h2>
 
-        <form id="loginForm" onsubmit="return false;">
+        <form id="loginForm" novalidate>
           <div class="form-group">
             <label for="loginEmail">Email</label>
             <input
@@ -133,6 +153,8 @@
               id="loginEmail"
               placeholder="Enter your email"
               required
+              autocomplete="email"
+              aria-describedby="emailHelp"
             />
           </div>
           <div class="form-group">
@@ -143,15 +165,21 @@
               id="loginPassword"
               placeholder="Enter your password"
               required
+              autocomplete="current-password"
             />
           </div>
-          <div class="error-message" id="loginError"></div>
-          <button type="submit" class="btn btn-primary" onclick="loginUser()">
-            Login
-          </button>
+
+          <div
+            class="error-message"
+            id="loginError"
+            role="alert"
+            aria-live="assertive"
+          ></div>
+
+          <button type="submit" class="btn btn-primary">Login</button>
         </form>
-      </div>
-    </div>
+      </section>
+    </main>
 
     <footer>
       <p>
@@ -162,41 +190,38 @@
     </footer>
 
     <script>
-      async function loginUser() {
-        const email = document.getElementById("loginEmail").value.trim();
-        const password = document.getElementById("loginPassword").value.trim();
-        const errorEl = document.getElementById("loginError");
+      // Redirect if already logged in
+      firebase.auth().onAuthStateChanged((user) => {
+        if (user) window.location.href = "index.html";
+      });
+
+      const form = document.getElementById("loginForm");
+      const errorEl = document.getElementById("loginError");
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
         errorEl.style.display = "none";
+        errorEl.textContent = "";
+
+        const email = form.loginEmail.value.trim();
+        const password = form.loginPassword.value.trim();
 
         if (!email || !password) {
-          errorEl.innerText = "Please enter both email and password.";
+          errorEl.textContent = "Please enter both email and password.";
           errorEl.style.display = "block";
           return;
         }
 
         try {
           await firebase.auth().signInWithEmailAndPassword(email, password);
-          // Redirect to main application
           window.location.href = "index.html";
         } catch (err) {
           console.error(err);
-          errorEl.innerText =
+          errorEl.textContent =
             "Login failed. Please check your email and password.";
           errorEl.style.display = "block";
         }
-      }
-    </script>
-    <script>
-      if ("serviceWorker" in navigator) {
-        window.addEventListener("load", () => {
-          navigator.serviceWorker
-            .register("sw.js")
-            .then((reg) => console.log("Service Worker registered", reg))
-            .catch((err) =>
-              console.error("Service Worker registration failed", err)
-            );
-        });
-      }
+      });
     </script>
   </body>
 </html>

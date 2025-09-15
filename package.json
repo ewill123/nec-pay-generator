@@ -18,7 +18,6 @@
   "license": "ISC",
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
-    "dotenv": "^16.4.7",
     "firebase": "^11.3.1"
   }
 }
